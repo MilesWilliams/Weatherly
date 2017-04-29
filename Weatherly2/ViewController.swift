@@ -9,6 +9,7 @@
 import Cocoa
 
 
+
 class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource, NSTableViewDelegate {
 
     @IBOutlet weak var closeButton: NSButton!
@@ -18,18 +19,17 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
     @IBOutlet weak var forecastDisplay: NSTableView!
     @IBOutlet weak var mainImage: NSImageView!
     var weather: WeatherApi!
+    
     var foreCastsArray = [Forecast]()
     let url = URL(string:"https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid=%201591691%20and%20u=%27c%27&format=json")
     
+
     override func viewDidLoad() {
         super.viewDidLoad()
         weather = WeatherApi(delegate: self)
         let pinkrose = NSColor(red: 0/255.0, green: 48.0/255.0, blue: 86.0/255.0, alpha: 1.0)
-        self.view.layer?.backgroundColor = pinkrose.cgColor
-        self.view.layer?.opacity = 1
-
-
         forecastDisplay.backgroundColor = pinkrose
+        self.view.layer?.backgroundColor = pinkrose.cgColor
         closeButton.image = NSImage(named: "closePng")
         cityName.stringValue = ""
         cityName.textColor = NSColor.white
@@ -57,6 +57,8 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
     func didGetWeather(weather: Weather){
         print("fetch weather")
         DispatchQueue.main.async() {
+            let pinkrose = NSColor(red: 0/255.0, green: 48.0/255.0, blue: 86.0/255.0, alpha: 1.0)
+            self.view.layer?.backgroundColor = pinkrose.cgColor
             self.cityName.stringValue = weather.city
             self.date.stringValue = weather.currentDate
             self.tempDisplay.stringValue = weather.tempHigh + "°"
@@ -68,7 +70,13 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
                 self.mainImage.image = NSImage(named:"cloudyMainImage")
             }
             if weather.text.contains("Rain") {
-                self.mainImage.image = NSImage(named:"rainMainImage")
+                self.mainImage.image = NSImage(named:"rainMain")
+            }
+            if weather.text.contains("Wind") {
+                self.mainImage.image = NSImage(named:"windyMain")
+            }
+            if weather.text.contains("Storm") {
+                self.mainImage.image = NSImage(named:"stormMain")
             }
         }
     }
@@ -171,6 +179,7 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
         return foreCastsArray.count
     }
     
+    // MARK: - Fine tune the image selection
     func tableView(_ tableView: NSTableView, viewFor tableColumn: NSTableColumn?, row: Int) -> NSView? {
 
         if foreCastsArray.count != 0 {
@@ -182,6 +191,7 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
                 return cell
             }
             if tableColumn?.identifier == "image" {
+                print(foreCastsArray[row].text)
                 let cell = tableView.make(withIdentifier: "imageCell", owner: self) as? NSTableCellView
                 if foreCastsArray[row].text.contains("Sunny") {
                     cell?.imageView?.image = NSImage(named:"sunny")
@@ -191,6 +201,12 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
                 }
                 if foreCastsArray[row].text.contains("Cloudy") {
                     cell?.imageView?.image = NSImage(named:"cloudy")
+                }
+                if foreCastsArray[row].text.contains("Windy") {
+                    cell?.imageView?.image = NSImage(named:"windy")
+                }
+                if foreCastsArray[row].text.contains("Storm") {
+                    cell?.imageView?.image = NSImage(named:"storm")
                 }
                 
                 return cell
