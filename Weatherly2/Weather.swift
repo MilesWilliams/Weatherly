@@ -18,7 +18,7 @@ struct Weather {
     let sunset : String
     let tempHigh : String
     let tempLow : String
-
+    let text : String
   
     init(weatherData: JSON) {
 
@@ -28,7 +28,7 @@ struct Weather {
         sunset = weatherData["query"]["results"]["channel"]["astronomy"]["sunset"].string!
         tempHigh = weatherData["query"]["results"]["channel"]["item"]["forecast"][0]["high"].string!
         tempLow = weatherData["query"]["results"]["channel"]["item"]["forecast"][0]["low"].string!
-//        weekForecast = weatherData["query"]["results"]["channel"]["item"]["forecast"].dictionary!
+        text = weatherData["query"]["results"]["channel"]["item"]["forecast"][0]["text"].string!
 
   }
   

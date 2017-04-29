@@ -18,27 +18,27 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
     @IBOutlet weak var forecastDisplay: NSTableView!
     @IBOutlet weak var mainImage: NSImageView!
     var weather: WeatherApi!
-    var fechedForecast : [DayForeCast]? = []
-    var NumberOfRows = 10
-    var DatesArray: [String] = []
-    var HighArray: [String] = []
-    var LowArray: [String] = []
     var foreCastsArray = [Forecast]()
+    let url = URL(string:"https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid=%201591691%20and%20u=%27c%27&format=json")
     
     override func viewDidLoad() {
         super.viewDidLoad()
         weather = WeatherApi(delegate: self)
         let pinkrose = NSColor(red: 0/255.0, green: 48.0/255.0, blue: 86.0/255.0, alpha: 1.0)
         self.view.layer?.backgroundColor = pinkrose.cgColor
+        self.view.layer?.opacity = 1
 
-        closeButton.image = NSImage(named: "close")
+
+        forecastDisplay.backgroundColor = pinkrose
+        closeButton.image = NSImage(named: "closePng")
         cityName.stringValue = ""
         cityName.textColor = NSColor.white
         date.stringValue = ""
         date.textColor = NSColor.white
         tempDisplay.stringValue = ""
-        let url = URL(string:"https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid=%201591691%20and%20u=%27c%27&format=json")
+
         weather.getWeather(url: url!)
+        self.getWeekForecats()
     }
 
 
@@ -60,21 +60,24 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
             self.cityName.stringValue = weather.city
             self.date.stringValue = weather.currentDate
             self.tempDisplay.stringValue = weather.tempHigh + "°"
-            self.mainImage.image = NSImage(named:"sunny")
-            self.getWeekForecats()
-            
+            print(weather.text)
+            if weather.text.contains("Sunny") {
+                self.mainImage.image = NSImage(named:"sunnyMain")
+            }
+            if weather.text.contains("Cloudy") {
+                self.mainImage.image = NSImage(named:"cloudyMainImage")
+            }
+            if weather.text.contains("Rain") {
+                self.mainImage.image = NSImage(named:"rainMainImage")
+            }
         }
     }
     
 
-    
-
-    
     func getWeekForecats(){
-       let url = "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20weather.forecast%20where%20woeid=%201591691%20and%20u=%27c%27&format=json"
-        var request = URLRequest(url:URL(string:url)!)
-        
 
+        var request = URLRequest(url:url!)
+        
         request.httpMethod = "GET"
         
         let configuration = URLSessionConfiguration.default
@@ -86,7 +89,6 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
                 print(error as Any)
             } else {
                 
-                self.fechedForecast = [DayForeCast]()
                 
                 do {
                     if let json = try? JSONSerialization.jsonObject(with: data!, options: JSONSerialization.ReadingOptions.allowFragments) as? NSDictionary {
@@ -153,40 +155,10 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
                                             }
                                         }
                                     }
-                                    
                                 }
-                            
                             }
                         }
                     }
-              
-                    
-                    
-                    
-//                    let json = try JSON(data:data!, options: JSONSerialization.ReadingOptions.mutableContainers)
-//                    let jsonData = json["query", "results", "channel", "item", "forecast"]
-                    
-//                    self.NumberOfRows = jsonData.count
-//                    print(self.numberOfRows)
-//                    NSLog("\(jsonData)")
-//
-//                    var d = 0
-//                    while d < self.NumberOfRows {
-//                        let date = json["query", "results", "channel", "item", "forecast"][(d)]["date"].string!
-//                        let high = json["query", "results", "channel", "item", "forecast"][(d)]["high"].string!
-//                        let low = json["query", "results", "channel", "item", "forecast"][(d)]["high"].string!
-//                        self.DatesArray.append(date)
-//                        self.HighArray.append(high)
-//                        self.LowArray.append(low)
-//                        d += 1
-//                    }
-
-
-                    
-                    print(self.DatesArray)
-                    
-                } catch let error{
-                    print(error)
                 }
             }
         
@@ -211,7 +183,15 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
             }
             if tableColumn?.identifier == "image" {
                 let cell = tableView.make(withIdentifier: "imageCell", owner: self) as? NSTableCellView
-                cell?.textField?.stringValue = foreCastsArray[row].text
+                if foreCastsArray[row].text.contains("Sunny") {
+                    cell?.imageView?.image = NSImage(named:"sunny")
+                }
+                if foreCastsArray[row].text.contains("Rain") {
+                    cell?.imageView?.image = NSImage(named:"rain")
+                }
+                if foreCastsArray[row].text.contains("Cloudy") {
+                    cell?.imageView?.image = NSImage(named:"cloudy")
+                }
                 
                 return cell
             }
@@ -230,34 +210,10 @@ class ViewController: NSViewController,WeatherApiDelegate, NSTableViewDataSource
 
         }
         
-    
         return nil
     }
     
-}
-
-
-class DayTemperature {
-    var code : String;
-    var date : String;
-    var day : String;
-    var low : String;
-    var high : String;
-    var text : String;
-    
-    init(
-        code : String,
-        date : String,
-        day : String,
-        low : String,
-        high : String,
-        text : String
-        ) {
-        self.code = code;
-        self.date = date;
-        self.day = day;
-        self.low = low;
-        self.high = high;
-        self.text = text;
+    @IBAction func closeApp(_ sender: Any) {
+        NSApplication.shared().terminate(self)
     }
 }
